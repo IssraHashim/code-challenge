@@ -1,3 +1,4 @@
+import collections
 from pydoc import doc
 from django.shortcuts import redirect, render
 from rest_framework.views import APIView
@@ -7,7 +8,7 @@ from django.core.files import File
 from documents.forms import DocumentForm
 from .models import Document
 from .serializers import DocumentSerializer
-
+from collections import Counter
 
 
 class DocumentListView(APIView):
@@ -34,24 +35,34 @@ class DocumentDetailView(APIView):
             document = Document.objects.get(id=pk)
             serialized_document = DocumentSerializer(document)
             url = serialized_document.data['file'].replace('/', '')
-            print(url)
-            g = open(url, 'r')
-            print(g.readable())
-            print(g.read())
-            g.seek(0)
-            print(g.readline())
-            print(g.readlines())
-            # with open('media/doc1_QqnKXb1.txt') as fp:
-            #     line = fp.readline()
-            #     cnt = 1
-            #     while line:
-            #         print("Line {}: {}".format(cnt, line.strip()))
-            #         line = fp.readline()
-            #         cnt += 1
-            # f = open(f'{url}', 'r')
-            # if f.mode == 'r':
-            #     contents = f.read()
-            #     print(contents)
+            file = open(url)
+            g = file.read()
+            stopwords = set(line.strip() for line in open('stopwords.txt'))
+            stopwords = stopwords.union(set(['the', 'a', 'to', 'on']))
+            
+            print(stopwords)
+            wordcount = {}
+            # with open(url) as fp:
+            #     lines = fp.readlines()
+            #     newLines = ''.join(map(str,lines))
+            #     text = list(line.split() for line in lines)
+            for words in g.lower().split():
+                words = words.replace('.', '')
+                words = words.replace(',' ,'')
+                words = words.replace('!' , '')
+                words = words.replace('?' , '')
+                if words not in stopwords:
+                    wordcount[words] = 1
+                else:
+                    wordcount[words] += 1
+
+            word_counter = Counter(wordcount)
+            for word, count in word_counter.most_common():
+                print(word, count)
+                    # print(max(set(list(new_sentence)), key=list(new_sentence).count))
+                # new_list = [word for sentence in words for word in sentence]
+                # data = Counter(new_list)
+                # print(data.most_common(1)[0][0])
             return Response(status=status.HTTP_200_OK)
         except:
             print('error')
