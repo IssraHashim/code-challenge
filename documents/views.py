@@ -9,8 +9,9 @@ from documents.forms import DocumentForm
 from .models import Document
 from .serializers import DocumentSerializer
 from collections import Counter
-
-
+import nltk
+from nltk.corpus import stopwords
+from nltk.tokenize import word_tokenize
 class DocumentListView(APIView):
 
     # def upload_file(request):
@@ -37,34 +38,32 @@ class DocumentDetailView(APIView):
             url = serialized_document.data['file'].replace('/', '')
             file = open(url)
             g = file.read()
-            stopwords = set(line.strip() for line in open('stopwords.txt'))
-            stopwords = stopwords.union(set(['the', 'a', 'to', 'on']))
-            
-            print(stopwords)
+            # a = word_tokenize(g.lower())
+            stop_words = set(stopwords.words('english'))
+            # stop_words = stop_words.extend(['us', ' ', 'must'])
             wordcount = {}
-            # with open(url) as fp:
-            #     lines = fp.readlines()
-            #     newLines = ''.join(map(str,lines))
-            #     text = list(line.split() for line in lines)
             for words in g.lower().split():
                 words = words.replace('.', '')
                 words = words.replace(',' ,'')
                 words = words.replace('!' , '')
                 words = words.replace('?' , '')
-                if words not in stopwords:
-                    wordcount[words] = 1
-                else:
-                    wordcount[words] += 1
+                if words != '':
+                    if words not in stop_words:
+                        if words not in wordcount:
+                                wordcount[words] = 1
+                        else:
+                            wordcount[words] += 1
 
-            word_counter = Counter(wordcount)
-            for word, count in word_counter.most_common():
-                print(word, count)
-                    # print(max(set(list(new_sentence)), key=list(new_sentence).count))
-                # new_list = [word for sentence in words for word in sentence]
-                # data = Counter(new_list)
-                # print(data.most_common(1)[0][0])
+            word_counter = collections.Counter(wordcount)
+            new_word_counter = sorted(word_counter.items(), key=lambda x: x[1], reverse=True)
+            first_ten = new_word_counter[0:10]
+            for pair in first_ten:
+                print(pair)
             return Response(status=status.HTTP_200_OK)
+
         except:
             print('error')
             return Response(status=status.HTTP_404_NOT_FOUND)
+
+
 
