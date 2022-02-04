@@ -47,6 +47,10 @@ class DocumentDetailView(APIView):
                 words = words.replace(',' ,'')
                 words = words.replace('!' , '')
                 words = words.replace('?' , '')
+                words = words.replace('-' , '')
+                words = words.replace('\'s' , '')
+                words = words.replace('\'ve' , '')
+                words = words.replace('\'re' , '')
                 if words != '':
                     if words not in stop_words:
                         if words not in wordcount:
@@ -57,8 +61,9 @@ class DocumentDetailView(APIView):
             word_counter = collections.Counter(wordcount)
             new_word_counter = sorted(word_counter.items(), key=lambda x: x[1], reverse=True)
             first_ten = new_word_counter[0:10]
-            for pair in first_ten:
-                print(pair)
+            for key, value in first_ten:
+                if key != 'us' and key != 'let' and key != 'we' and key != 'you':
+                    print(f'{key} - {value}')
             return Response(status=status.HTTP_200_OK)
 
         except:
