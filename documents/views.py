@@ -5,8 +5,7 @@ from rest_framework import status
 from .models import Document
 from .serializers import DocumentSerializer
 from nltk.corpus import stopwords
-import pandas
-
+from tabulate import tabulate
 class DocumentListView(APIView):
 
     def get(self, _request):
@@ -49,15 +48,18 @@ class DocumentDetailView(APIView):
                 if key != 'us' and key != 'let' and key != 'we' and key != 'you' and key !='would' and key!= 'must':
                     print(key)
 
+                    sentences = []
                     for sentence in g.split('.'):
-                        # print((key or key.capitalize()) in (sentence.split(' ')))
                         if ((key in (sentence.split(' '))) or (key.capitalize() in (sentence.split(' ')))):
                             sentence = sentence.replace('\n', '')
-                            results.append(f'{key} - {value} - {sentence}')
+                            sentence = sentence.replace('\"', '')
+                            sentences.append(sentence)
+                    
+                    results.append([key, value, sentences])
 
-            
-
-            return Response(pandas.DataFrame(results), status=status.HTTP_200_OK)
+            col_names = ['words', 'occurences', 'sentences']
+            table = tabulate(results, headers=col_names)
+            return Response(results, status=status.HTTP_200_OK)
 
         except:
             print('error')

@@ -12,6 +12,7 @@ djangorestframework = "*"
 python-decouple = "*"
 nltk = "*"
 tabulate = "*"
+sidetable = "*"
 
 [dev-packages]
 
