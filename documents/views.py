@@ -1,28 +1,13 @@
 import collections
-from pydoc import doc
-from django.shortcuts import redirect, render
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from django.core.files import File
-from documents.forms import DocumentForm
 from .models import Document
 from .serializers import DocumentSerializer
-from collections import Counter
-import nltk
 from nltk.corpus import stopwords
-from nltk.tokenize import word_tokenize
-class DocumentListView(APIView):
+import pandas
 
-    # def upload_file(request):
-    #     if request.method == 'POST':
-    #         form = DocumentForm(request.POST, request.FILES)
-    #         if form.is_valid():
-    #             form.save()
-    #             return redirect('')
-    #     else:
-    #         form = DocumentForm()
-    #     return render(request, 'upload.html', {'form': form})
+class DocumentListView(APIView):
 
     def get(self, _request):
         documents = Document.objects.all()
@@ -38,9 +23,7 @@ class DocumentDetailView(APIView):
             url = serialized_document.data['file'].replace('/', '')
             file = open(url)
             g = file.read()
-            # a = word_tokenize(g.lower())
             stop_words = set(stopwords.words('english'))
-            # stop_words = stop_words.extend(['us', ' ', 'must'])
             wordcount = {}
             for words in g.lower().split():
                 words = words.replace('.', '')
@@ -61,10 +44,20 @@ class DocumentDetailView(APIView):
             word_counter = collections.Counter(wordcount)
             new_word_counter = sorted(word_counter.items(), key=lambda x: x[1], reverse=True)
             first_ten = new_word_counter[0:10]
+            results = []
             for key, value in first_ten:
-                if key != 'us' and key != 'let' and key != 'we' and key != 'you':
-                    print(f'{key} - {value}')
-            return Response(status=status.HTTP_200_OK)
+                if key != 'us' and key != 'let' and key != 'we' and key != 'you' and key !='would' and key!= 'must':
+                    print(key)
+
+                    for sentence in g.split('.'):
+                        # print((key or key.capitalize()) in (sentence.split(' ')))
+                        if ((key in (sentence.split(' '))) or (key.capitalize() in (sentence.split(' ')))):
+                            sentence = sentence.replace('\n', '')
+                            results.append(f'{key} - {value} - {sentence}')
+
+            
+
+            return Response(pandas.DataFrame(results), status=status.HTTP_200_OK)
 
         except:
             print('error')

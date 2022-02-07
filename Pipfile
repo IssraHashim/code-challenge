@@ -11,6 +11,7 @@ autopep8 = "*"
 djangorestframework = "*"
 python-decouple = "*"
 nltk = "*"
+tabulate = "*"
 
 [dev-packages]
 
