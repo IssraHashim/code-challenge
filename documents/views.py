@@ -5,7 +5,6 @@ from rest_framework import status
 from .models import Document
 from .serializers import DocumentSerializer
 from nltk.corpus import stopwords
-from tabulate import tabulate
 class DocumentListView(APIView):
 
     def get(self, _request):
@@ -19,6 +18,7 @@ class DocumentDetailView(APIView):
         try:
             document = Document.objects.get(id=pk)
             serialized_document = DocumentSerializer(document)
+            title = serialized_document.data['title']
             url = serialized_document.data['file'].replace('/', '')
             file = open(url)
             g = file.read()
@@ -43,11 +43,9 @@ class DocumentDetailView(APIView):
             word_counter = collections.Counter(wordcount)
             new_word_counter = sorted(word_counter.items(), key=lambda x: x[1], reverse=True)
             first_ten = new_word_counter[0:10]
-            results = []
+            results = [title]
             for key, value in first_ten:
                 if key != 'us' and key != 'let' and key != 'we' and key != 'you' and key !='would' and key!= 'must':
-                    print(key)
-
                     sentences = []
                     for sentence in g.split('.'):
                         if ((key in (sentence.split(' '))) or (key.capitalize() in (sentence.split(' ')))):
@@ -57,8 +55,6 @@ class DocumentDetailView(APIView):
                     
                     results.append([key, value, sentences])
 
-            col_names = ['words', 'occurences', 'sentences']
-            table = tabulate(results, headers=col_names)
             return Response(results, status=status.HTTP_200_OK)
 
         except:
