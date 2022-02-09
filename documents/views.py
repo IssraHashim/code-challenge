@@ -19,7 +19,7 @@ def get_file_text(pk: int) -> tuple[str, str]:
     url = serialized_doc.data['file'].replace('/', '')
     with open(url) as file:
         return (title, file.read())
-        
+
 class DocumentListView(APIView):
 
     def get(self, _request):
