@@ -13,6 +13,7 @@ python-decouple = "*"
 nltk = "*"
 tabulate = "*"
 sidetable = "*"
+pytest = "*"
 
 [dev-packages]
 
